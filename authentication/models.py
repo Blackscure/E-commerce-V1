@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
-from django.utils.translation import ugettext_lazy as _
 from utils.choices import SEX, USER_TYPE
 
 class CustomUserManager(BaseUserManager):
@@ -13,7 +12,7 @@ class CustomUserManager(BaseUserManager):
         Create and return a regular user with an email and password.
         """
         if not email:
-            raise ValueError(_('The Email field must be set'))
+            raise ValueError('The Email field must be set')
         email = self.normalize_email(email)
         user = self.model(email=email, username=username, **extra_fields)
         user.set_password(password)
@@ -35,18 +34,18 @@ class User(AbstractUser):
     Custom User model with additional fields.
     """
 
-    email = models.EmailField(_('email address'), unique=True)
+    email = models.EmailField('email address', unique=True)
     sex = models.CharField(max_length=42, choices=SEX, default='male')
     status = models.BooleanField(default=True)
     image = models.ImageField(upload_to='user_images/', null=True, blank=True)
     user_type = models.CharField(max_length=42, choices=USER_TYPE, default='customer')
 
     # Additional fields
-    first_name = models.CharField(_('first name'), max_length=30, blank=True)
-    last_name = models.CharField(_('last name'), max_length=30, blank=True)
+    first_name = models.CharField('first name', max_length=30, blank=True)
+    last_name = models.CharField('last name', max_length=30, blank=True)
 
     # Override default username field
-    username = models.CharField(_('username'), max_length=30, unique=True)
+    username = models.CharField('username', max_length=30, unique=True)
 
     objects = CustomUserManager()
 
@@ -60,5 +59,5 @@ class User(AbstractUser):
         return self.first_name
 
     class Meta:
-        verbose_name = _('user')
-        verbose_name_plural = _('users')
+        verbose_name = 'user'
+        verbose_name_plural = 'users'
