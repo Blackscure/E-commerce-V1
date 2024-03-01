@@ -118,6 +118,7 @@ class GetUserView(views.APIView):
             })
         
 class EditUserAPIView(APIView):
+    permission_classes = [IsAuthenticatedUser]
     def put(self, request, pk):
         try:
             getuser = User.objects.get(pk=pk)
@@ -139,3 +140,30 @@ class EditUserAPIView(APIView):
                 'message':'We were not able to get registered users .',
                 "error": str(e)
             })
+        
+
+class DeleteUserAPIView(APIView):
+    permission_classes = [IsAuthenticatedUser]
+    def delete(self, request, pk):
+        try:
+            user_to_delete = User.objects.get(pk=pk)
+            user_to_delete.delete()
+            
+            return Response({
+                'status': True,
+                'message': 'User has been successfully deleted.',
+            })
+
+        except User.DoesNotExist:
+            return Response({
+                'status': False,
+                'message': 'User not found.',
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        except Exception as e:
+            return Response({
+                'status': False,
+                'message': 'Error deleting user.',
+                'error': str(e),
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
