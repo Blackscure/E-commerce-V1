@@ -1,63 +1,31 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser, BaseUserManager
-from utils.choices import SEX, USER_TYPE
 
-class CustomUserManager(BaseUserManager):
-    """
-    Custom manager for User model.
-    """
-
-    def create_user(self, email, username, password=None, **extra_fields):
-        """
-        Create and return a regular user with an email and password.
-        """
-        if not email:
-            raise ValueError('The Email field must be set')
-        email = self.normalize_email(email)
-        user = self.model(email=email, username=username, **extra_fields)
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
-
-    def create_superuser(self, email, username, password=None, **extra_fields):
-        """
-        Create and return a superuser with an email and password.
-        """
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-
-        return self.create_user(email, username, password, **extra_fields)
-
+from django.contrib.auth.models import AbstractUser
 
 class User(AbstractUser):
-    """
-    Custom User model with additional fields.
-    """
+    email = models.EmailField(unique=True)
+    first_name = models.CharField(max_length=30, blank=True)
+    last_name = models.CharField(max_length=30, blank=True)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
+    is_admin = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
-    email = models.EmailField('email address', unique=True)
-    sex = models.CharField(max_length=42, choices=SEX, default='male')
-    status = models.BooleanField(default=True)
-    image = models.ImageField(upload_to='user_images/', null=True, blank=True)
-    user_type = models.CharField(max_length=42, choices=USER_TYPE, default='customer')
-
-    # Additional fields
-    first_name = models.CharField('first name', max_length=30, blank=True)
-    last_name = models.CharField('last name', max_length=30, blank=True)
-
-    # Override default username field
-    username = models.CharField('username', max_length=30, unique=True)
-
-    objects = CustomUserManager()
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
 
     def __str__(self):
-        return self.username
+        return  f"{self.first_name} {self.last_name} {self.email}"
 
     def get_full_name(self):
         return f"{self.first_name} {self.last_name}"
 
     def get_short_name(self):
         return self.first_name
-
+    
     class Meta:
-        verbose_name = 'user'
-        verbose_name_plural = 'users'
+        db_table = 'User'
+   
+
