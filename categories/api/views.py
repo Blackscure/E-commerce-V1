@@ -25,8 +25,21 @@ class CategoryList(APIView):
         
         try:
             serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response({'status': True, 'message': 'Category created successfully'}, status=status.HTTP_201_CREATED)
+            category = serializer.save()
+
+            # Include the created data in the response
+            response_data = {
+                'status': True,
+                'message': 'Category created successfully',
+                'data': {
+                    'id': category.id,
+                    'name': category.name,
+                    'description': category.description,
+                    # Include other fields as needed
+                }
+            }
+
+            return Response(response_data, status=status.HTTP_201_CREATED)
         except IntegrityError:
             return Response({'status': False, 'message': 'Category with the same name already exists.'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
