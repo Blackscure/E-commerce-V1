@@ -12,9 +12,13 @@ from rest_framework.views import APIView
 
 
 
+
+
 from django.contrib.auth import get_user_model
 
 from authentication.api.serializers import RegisterSerializer, UserSerializer
+from utils.paginator import CustomPaginator
+from utils.permissions import IsAuthenticatedUser
 
 User=get_user_model()
 
@@ -86,19 +90,31 @@ class LoginView(views.APIView):
 
 
 class GetUserView(views.APIView):
+    permission_classes = [IsAuthenticatedUser]
+
     def get(self, request):
         try:
-            users =  User.objects.all()
-            serializer  = UserSerializer(users, many=True)
+            users = User.objects.all()
+            paginator = CustomPaginator()
+            result_page = paginator.paginate_queryset(
+                users, request)
+            serializer = UserSerializer(
+                result_page, many=True, context={'request': request})
+            response = paginator.get_paginated_response(
+                serializer.data)
+            response.data.pop('status')
+            response.data.pop('message')
+
             return Response({
                 "status": True,
-                "data": serializer.data
+                'message': 'Users',
+                "data": response.data  # Fix the variable name here
             })
         except Exception as e:
-             
             return Response({
                 'status': False,
-                'message': 'user found'
+                'message': 'Error retrieving users',
+                "error": str(e)
             })
         
 class EditUserAPIView(APIView):
