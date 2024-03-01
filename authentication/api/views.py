@@ -6,17 +6,45 @@ from rest_framework.permissions import AllowAny
 
 from authentication.api.serializers import UserSerializer
 from authentication.models import User
+from django.db import IntegrityError
+
 
 class RegistrationAPIView(APIView):
-    permission_classes = [AllowAny]
+    serializer_class = UserSerializer
 
     def post(self, request):
-        serializer = UserSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            token, created = Token.objects.get_or_create(user=user)
-            return Response({'token': token.key}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        data = request.data
+        serializer = self.serializer_class(data=data)
+
+        if not serializer.is_valid():
+            return Response({
+                'status': False,
+                'message': 'Provide valid details to register',
+                'errors': serializer.errors,
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        email = data.get('email')
+
+        # Check if user with the provided email already exists
+        user_exists = User.objects.filter(email=email).exists()
+        if user_exists:
+            return Response({
+                'status': False,
+                'message': 'User with this email already exists',
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create a new user
+        user = serializer.save()
+
+        # Serialize the user data for response
+        user_serializer = self.serializer_class(user)
+
+        return Response({
+            'status': True,
+            'message': 'Registration successful',
+            'data': user_serializer.data,
+        }, status=status.HTTP_201_CREATED)
+
 
 class LoginAPIView(APIView):
     permission_classes = [AllowAny]
