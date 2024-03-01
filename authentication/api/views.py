@@ -83,3 +83,43 @@ class LoginView(views.APIView):
         }
 
         return Response(data, status=status.HTTP_200_OK)
+
+
+class GetUserView(views.APIView):
+    def get(self, request):
+        try:
+            users =  User.objects.all()
+            serializer  = UserSerializer(users, many=True)
+            return Response({
+                "status": True,
+                "data": serializer.data
+            })
+        except Exception as e:
+             
+            return Response({
+                'status': False,
+                'message': 'user found'
+            })
+        
+class EditUserAPIView(APIView):
+    def put(self, request, pk):
+        try:
+            getuser = User.objects.get(pk=pk)
+            serializer = UserSerializer(getuser, data=request.data)
+            if not serializer.is_valid():
+                return Response({"status": "error","data": serializer.errors}, status=status.HTTP_400_BAD_REQUEST) 
+            serializer.save()
+     
+            return Response({
+                'status': True,
+                'message':'Update Has been successful.',
+                'data': serializer.data
+            })
+
+
+        except Exception as e:
+                return Response({
+                'status':False,
+                'message':'We were not able to get registered users .',
+                "error": str(e)
+            })
