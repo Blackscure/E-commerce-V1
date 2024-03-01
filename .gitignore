@@ -1,0 +1,46 @@
+# Django development artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+env/
+*.env
+
+# Database
+db.sqlite3
+
+# Static files
+staticfiles/
+media/
+
+# Secret key
+*.secret
+
+# Logs
+*.log
+
+# Environment-specific settings
+.env
+
+# Compiled Python files
+*.pyc
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyw
+*.pyz
+*.pyzw
+*.pyo
+
+# IDE-specific files/directories
+.idea/
+.vscode/
+
+# Local development settings
+local_settings.py
