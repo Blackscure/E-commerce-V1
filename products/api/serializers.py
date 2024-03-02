@@ -1,20 +1,31 @@
-# products/views.py
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import serializers
 
+from categories.api.serializers import CategorySerializer
+from categories.models import Category
 from products.models import Product
-from .serializers import ProductSerializer
 
-class ProductListCreateAPIView(APIView):
-    def get(self, request):
-        products = Product.objects.all()
-        serializer = ProductSerializer(products, many=True)
-        return Response({'products': serializer.data})
 
-    def post(self, request):
-        serializer = ProductSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'status': True, 'message': 'Product created successfully'}, status=status.HTTP_201_CREATED)
-        return Response({'status': False, 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+class ProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ('name', 'description', 'price', 'category', 'image')
+
+    def validate_name(self, value):
+        """
+        Check if a product with the same name already exists.
+        """
+        existing_products = Product.objects.filter(name__iexact=value)
+        if self.instance:
+            existing_products = existing_products.exclude(pk=self.instance.pk)
+
+        if existing_products.exists():
+            raise serializers.ValidationError("A product with the same name already exists.")
+        
+        return value
+
+    def create(self, validated_data):
+        """
+        Create a new product and return its data.
+        """
+        product = Product.objects.create(**validated_data)
+        return product

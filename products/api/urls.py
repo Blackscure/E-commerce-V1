@@ -1,10 +1,9 @@
 from django.urls import path
 
-from products.api.serializers import ProductListCreateAPIView
-from products.api.views import ProductDetailAPIView
+from products.api.views import ProductDetail, ProductList
 
 
 urlpatterns = [
-    path('products/', ProductListCreateAPIView.as_view(), name='product-list-create'),
-    path('products/<int:pk>/', ProductDetailAPIView.as_view(), name='product-detail'),
+    path('products/', ProductList.as_view(), name='product-list'),
+    path('products/<int:pk>/', ProductDetail.as_view(), name='product-detail'),
 ]
