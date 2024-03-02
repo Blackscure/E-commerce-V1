@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'authentication.apps.AuthenticationConfig',
     'categories.apps.CategoriesConfig',
     'products.apps.ProductsConfig',
+    'customers.apps.CustomersConfig',
 
          #third party
     'rest_framework',
