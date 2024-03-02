@@ -71,6 +71,7 @@ class LoginView(views.APIView):
 
         # Perform authentication
         user = authenticate(email=email, password=password)
+        print(user)
           
 
         if user is None:
