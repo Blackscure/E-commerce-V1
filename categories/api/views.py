@@ -7,8 +7,10 @@ from categories.api.serializers import CategorySerializer
 
 from categories.models import Category
 from utils.paginator import CustomPaginator
+from utils.permissions import IsAuthenticatedUser
 
 class CategoryList(APIView):
+    permission_classes = [IsAuthenticatedUser]
     def get(self, request):
         try:
             categories = Category.objects.all()
@@ -31,6 +33,7 @@ class CategoryList(APIView):
             })
 
     def post(self, request):
+        
         data = request.data
 
         # Validate if required fields are present
@@ -63,6 +66,7 @@ class CategoryList(APIView):
 
 
 class CategoryDetail(APIView):
+    permission_classes = [IsAuthenticatedUser]
     def get_object(self, pk):
         try:
             return Category.objects.get(pk=pk)

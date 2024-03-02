@@ -5,9 +5,11 @@ from products.api.serializers import ProductCreateSerializer, ProductSerializer
 
 from products.models import Product
 from utils.paginator import CustomPaginator
+from utils.permissions import IsAuthenticatedUser
 
 
 class ProductCreateView(APIView):
+    permission_classes = [IsAuthenticatedUser]
     def post(self, request):
         try:
             serializer = ProductCreateSerializer(data=request.data)
@@ -33,7 +35,8 @@ class ProductCreateView(APIView):
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class ProductList(APIView):
-   def get(self, request):
+    permission_classes = [IsAuthenticatedUser]
+    def get(self, request):
         try:
             products = Product.objects.all()
             paginator = CustomPaginator()
@@ -56,6 +59,7 @@ class ProductList(APIView):
 
 
 class ProductDetail(APIView):
+    permission_classes = [IsAuthenticatedUser]
     def get_object(self, pk):
         try:
             return Product.objects.get(pk=pk)
