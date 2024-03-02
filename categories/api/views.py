@@ -1,4 +1,3 @@
-# views.py
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -7,12 +6,29 @@ from django.db import IntegrityError
 from categories.api.serializers import CategorySerializer
 
 from categories.models import Category
+from utils.paginator import CustomPaginator
 
 class CategoryList(APIView):
     def get(self, request):
-        categories = Category.objects.all()
-        serializer = CategorySerializer(categories, many=True)
-        return Response({'categories': serializer.data})
+        try:
+            categories = Category.objects.all()
+            paginator = CustomPaginator()
+            result_page = paginator.paginate_queryset(categories, request)
+            serializer = CategorySerializer(result_page, many=True, context={'request': request})
+            response = paginator.get_paginated_response(serializer.data)
+            response_data = response.data  # Use a different variable name to avoid conflicts
+
+            return Response({
+                "status": True,
+                'message': 'Categories',
+                "data": response_data
+            })
+        except Exception as e:
+            return Response({
+                'status': False,
+                'message': 'Error retrieving categories',
+                "error": str(e)
+            })
 
     def post(self, request):
         data = request.data
@@ -25,8 +41,21 @@ class CategoryList(APIView):
         
         try:
             serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response({'status': True, 'message': 'Category created successfully'}, status=status.HTTP_201_CREATED)
+            category = serializer.save()
+
+            # Include the created data in the response
+            response_data = {
+                'status': True,
+                'message': 'Category created successfully',
+                'data': {
+                    'id': category.id,
+                    'name': category.name,
+                    'description': category.description,
+                    # Include other fields as needed
+                }
+            }
+
+            return Response(response_data, status=status.HTTP_201_CREATED)
         except IntegrityError:
             return Response({'status': False, 'message': 'Category with the same name already exists.'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
@@ -51,7 +80,16 @@ class CategoryDetail(APIView):
         try:
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            return Response({'status': True, 'message': 'Category updated successfully'})
+            
+            # Retrieve the updated category data
+            updated_category = self.get_object(pk)
+            updated_serializer = CategorySerializer(updated_category)
+
+            return Response({
+                'status': True,
+                'message': 'Category updated successfully',
+                'data': updated_serializer.data  # Include the updated data in the response
+            })
         except IntegrityError:
             return Response({'status': False, 'message': 'Category with the same name already exists.'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
