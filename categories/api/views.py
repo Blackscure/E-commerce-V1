@@ -1,4 +1,3 @@
-# views.py
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -7,12 +6,29 @@ from django.db import IntegrityError
 from categories.api.serializers import CategorySerializer
 
 from categories.models import Category
+from utils.paginator import CustomPaginator
 
 class CategoryList(APIView):
     def get(self, request):
-        categories = Category.objects.all()
-        serializer = CategorySerializer(categories, many=True)
-        return Response({'categories': serializer.data})
+        try:
+            categories = Category.objects.all()
+            paginator = CustomPaginator()
+            result_page = paginator.paginate_queryset(categories, request)
+            serializer = CategorySerializer(result_page, many=True, context={'request': request})
+            response = paginator.get_paginated_response(serializer.data)
+            response_data = response.data  # Use a different variable name to avoid conflicts
+
+            return Response({
+                "status": True,
+                'message': 'Categories',
+                "data": response_data
+            })
+        except Exception as e:
+            return Response({
+                'status': False,
+                'message': 'Error retrieving categories',
+                "error": str(e)
+            })
 
     def post(self, request):
         data = request.data
