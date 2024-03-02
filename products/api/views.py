@@ -1,30 +1,59 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from products.api.serializers import ProductSerializer
+from products.api.serializers import ProductCreateSerializer, ProductSerializer
 
 from products.models import Product
+from utils.paginator import CustomPaginator
 
 
-
-class ProductList(APIView):
-    def get(self, request):
-        try:
-            products = Product.objects.all()
-            serializer = ProductSerializer(products, many=True)
-            return Response({'status': True, 'products': serializer.data})
-        except Exception as e:
-            return Response({'status': False, 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+class ProductCreateView(APIView):
     def post(self, request):
         try:
-            serializer = ProductSerializer(data=request.data)
+            serializer = ProductCreateSerializer(data=request.data)
             if serializer.is_valid():
-                serializer.save()
-                return Response({'status': True, 'message': 'Product created successfully'}, status=status.HTTP_201_CREATED)
-            return Response({'status': False, 'message': 'Invalid data provided', 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+                product = serializer.save()
+                response_data = {
+                    'status': True,
+                    'message': 'Product created successfully',
+                    'data': ProductCreateSerializer(product).data
+                }
+                return Response(response_data, status=status.HTTP_201_CREATED)
+
+            return Response({
+                'status': False,
+                'message': 'Invalid data provided',
+                'errors': serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+
         except Exception as e:
-            return Response({'status': False, 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({
+                'status': False,
+                'message': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class ProductList(APIView):
+   def get(self, request):
+        try:
+            products = Product.objects.all()
+            paginator = CustomPaginator()
+            result_page = paginator.paginate_queryset(products, request)
+            serializer = ProductSerializer(result_page, many=True, context={'request': request})
+            response = paginator.get_paginated_response(serializer.data)
+            response_data = response.data
+
+            return Response({
+                "status": True,
+                'message': 'Products',
+                "data": response_data
+            })
+        except Exception as e:
+            return Response({
+                'status': False,
+                'message': 'Error retrieving products',
+                "error": str(e)
+            })
+
 
 class ProductDetail(APIView):
     def get_object(self, pk):
