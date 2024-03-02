@@ -5,9 +5,11 @@ from rest_framework import status
 from orders.api.serializers import OrderSerializer
 
 from orders.models import Order
+from utils.permissions import IsAuthenticatedUser
 
 
 class OrderListCreateView(APIView):
+    permission_classes = [IsAuthenticatedUser]
     def get(self, request):
         orders = Order.objects.all()
         serializer = OrderSerializer(orders, many=True)

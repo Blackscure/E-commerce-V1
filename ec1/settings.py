@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'categories.apps.CategoriesConfig',
     'products.apps.ProductsConfig',
     'customers.apps.CustomersConfig',
+    'orders.apps.OrdersConfig',
 
          #third party
     'rest_framework',
