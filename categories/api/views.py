@@ -80,7 +80,16 @@ class CategoryDetail(APIView):
         try:
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            return Response({'status': True, 'message': 'Category updated successfully'})
+            
+            # Retrieve the updated category data
+            updated_category = self.get_object(pk)
+            updated_serializer = CategorySerializer(updated_category)
+
+            return Response({
+                'status': True,
+                'message': 'Category updated successfully',
+                'data': updated_serializer.data  # Include the updated data in the response
+            })
         except IntegrityError:
             return Response({'status': False, 'message': 'Category with the same name already exists.'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
