@@ -1,5 +1,7 @@
 # serializers.py
 from rest_framework import serializers
+from authentication.api.serializers import UserSerializer
+from authentication.models import User
 from orders.models import Order, OrderItem
 
 from products.api.serializers import ProductSerializer
@@ -13,7 +15,8 @@ class OrderItemSerializer(serializers.ModelSerializer):
         fields = ('product', 'quantity', 'subtotal')
 
 class OrderSerializer(serializers.ModelSerializer):
-    user = serializers.ReadOnlyField(source='user.email')
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    products = serializers.ListField(child=serializers.IntegerField(), write_only=True)  
     items = OrderItemSerializer(many=True, read_only=True)
 
     class Meta:

@@ -119,6 +119,10 @@ EMAIL_HOST_USER = 'Wekesabuyahi@gmail.com'
 EMAIL_HOST_PASSWORD = 'flna kjwh wtjb kfhl'
 
 ROOT_URLCONF = 'ec1.urls'
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3030",  # Replace with the domain of your frontend
+]
 
 TEMPLATES = [
     {
