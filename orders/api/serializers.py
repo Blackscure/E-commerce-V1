@@ -15,7 +15,8 @@ class OrderItemSerializer(serializers.ModelSerializer):
         fields = ('product', 'quantity', 'subtotal')
 
 class OrderSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())  
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    products = serializers.ListField(child=serializers.IntegerField(), write_only=True)  
     items = OrderItemSerializer(many=True, read_only=True)
 
     class Meta:
